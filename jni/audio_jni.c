@@ -67,7 +67,7 @@ void audio_play(const char* buf,int len,int au_sample,int au_channel,int au_bits
       LOGE("FindClass() Error.....");   
       goto error;   
     }
-    //ÔÙ»ñµÃÀàÖÐµÄ·½·¨   
+    //ï¿½Ù»ï¿½ï¿½ï¿½ï¿½ï¿½ÐµÄ·ï¿½ï¿½ï¿½   
     self.mid = (*self.env)->GetMethodID(self.env, cls, "audioWrite", "()V");
     if (self.mid == NULL) {   
       LOGE("GetMethodID() Error.....");   
@@ -108,15 +108,22 @@ JNIEXPORT void JNICALL JNICALL Java_com_howell_camera_HWCameraActivity_nativeAud
 {
   (*env)->GetJavaVM(env,&self.jvm);   
 
-  //²»ÄÜÖ±½Ó¸³Öµ(g_obj = obj)   
+  //ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó¸ï¿½Öµ(g_obj = obj)   
   self.obj = (*env)->NewGlobalRef(env,obj);
 
   jclass clz = (*env)->GetObjectClass(env, obj);
   self.data_length_id = (*env)->GetFieldID(env,clz, "mAudioDataLength", "I");
 
   jfieldID id = (*env)->GetFieldID(env,clz,"mAudioData","[B");
-  self.data_array = (*env)->GetObjectField(env,obj,id);
-  self.data_array_len =(*env)->GetArrayLength(env,self.data_array);
+
+  jbyteArray data_array_local_ref = (*env)->GetObjectField(env,obj,id);
+  int data_array_len_local_ref = (*env)->GetArrayLength(env,data_array_local_ref);
+  jbyteArray data_array_global_ref = (*env)->NewGlobalRef(env, data_array_local_ref);
+
+  self.data_array = data_array_global_ref;
+  self.data_array_len = data_array_len_local_ref;
+  //self.data_array = (*env)->GetObjectField(env,obj,id);
+  //self.data_array_len =(*env)->GetArrayLength(env,self.data_array);
 
   sem_init(&self.over_audio_sem,0,0);
   sem_init(&self.over_audio_ret_sem,0,0);

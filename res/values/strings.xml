@@ -3,7 +3,7 @@
     <string name="hello">Hello World, HWCameraActivity!</string>
     <string name="app_name">INZ-200</string>
     <string name="video_set">图像设置</string>
-    <string name="color_change">彩色黑白切换</string>
+    <string name="color_change">彩黑切换</string>
     <string name="auto">自动</string>
     <string name="self">手动</string>
     <string name="color">彩色</string>
@@ -23,11 +23,11 @@
     <string name="surface_scale">辅助调焦</string>
     <string name="scale_large">放大</string>
     <string name="scale_normal">正常</string>
-    <string name="lowest_shutter">最低快门</string>
-    <string name="max_gain"> 最高增益</string>
+    <string name="lowest_shutter">慢速快门设置</string>
+    <string name="max_gain">增益调节</string>
    
     <string-array name="shutter_arry">
-        <item>1秒</item>
+        <item>请选择：</item>
         <item>1/2秒</item>
         <item>1/4秒</item>
         <item>1/7秒</item>

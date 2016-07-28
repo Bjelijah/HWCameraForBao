@@ -1,16 +1,19 @@
 package com.howell.camera;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.SoundPool;
 import android.opengl.GLSurfaceView;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.View;
@@ -23,32 +26,24 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
+import com.howell.action.NetAction;
 import com.howell.play.YV12Renderer;
 
 public class HWCameraActivity extends Activity implements Callback,OnClickListener{
     /** Called when the activity is first created. */
 	private GLSurfaceView mGlView;
-	private static HWCameraActivity mPlayer;
-	
-	private int backCount;
 	private boolean mPausing;
 	private boolean showSurfaceSet;
 	
 	private ScrollView mSurfaceSet;
 	private LinearLayout mLayoutChangeColor,mLayoutChangePower;
-	private CheckBox mAutoChange,mColorChange,mLaserSet,mLasetPower,mRecord,mMoveDetect,mScale;
-	private TextView mTVColor,mTVWhite,mTVHighPower,mTVLowPower,mTVOff,mTVOn;
-//	private TextView mSDSpace;
-//	private static ProgressBar mProgressBar;
-//	private Spinner sp;
-	private Spinner spShutter,spGain;
+	private CheckBox mColorChange,mLaserSet,mLasetPower,mRecord,mMoveDetect,mScale;
+	private Spinner spShutter;
 	private ArrayAdapter<String> shutterAdapter,gainAdapter;  
 	private String[] shutterArray,gainArray;
 	private NetIpcamMisc misc ;
-	private boolean spShutterFirstSelectFlag,spGainFirstSelectFlag;
+//	private boolean spShutterFirstSelectFlag;
 	private CheckBox cbShutter,cbGain;
 	
 	private static AudioTrack mAudioTrack;
@@ -63,11 +58,6 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 	
 	private ClearAlarmNumThread thread;
 	private AlarmNumManager alarmManager;
-	
-	//private static final int AutoChangeSetChecked = 1;
-	//private static final int AutoChangeSetUnChecked = 2;
-	//private static final int LaserSetChecked = 3;
-	//private static final int LaserSetUnChecked = 4;
 	
 	static {
 		System.loadLibrary("hwplay");
@@ -86,13 +76,10 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 		mGlView.getHolder().addCallback((Callback) this);
 		mGlView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		
-		mPlayer = this;
-		backCount = 0;
 		mPausing = false;
 		showSurfaceSet = false;
-		spShutterFirstSelectFlag = false;
-		spGainFirstSelectFlag = false;
-		
+//		spShutterFirstSelectFlag = false;
+		setIP(NetAction.getInstance().getServiceIp(this));
 		alarmManager = new AlarmNumManager();
 		
 		mSurfaceSet = (ScrollView)findViewById(R.id.scrollView);
@@ -110,31 +97,28 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 				}
 			}
 		});
-//		mSDSpace = (TextView)findViewById(R.id.sd_space);
-//		mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
-		mTVColor = (TextView)findViewById(R.id.tv_color);
-		mTVWhite = (TextView)findViewById(R.id.tv_white);
-		mTVHighPower = (TextView)findViewById(R.id.tv_high_power);
-		mTVLowPower = (TextView)findViewById(R.id.tv_low_power);
-		mTVOn = (TextView)findViewById(R.id.tv_switch_on);
-		mTVOff = (TextView)findViewById(R.id.tv_switch_off);
 		
 		mLayoutChangeColor = (LinearLayout)findViewById(R.id.ll_color_change);
 		mLayoutChangePower = (LinearLayout)findViewById(R.id.ll_change_power);
 		
-		mAutoChange = (CheckBox)findViewById(R.id.cb_auto_change);
 		mColorChange = (CheckBox)findViewById(R.id.cb_color_change);
+		mColorChange.setOnClickListener(this);
+		mScale = (CheckBox)findViewById(R.id.cb_scale);
+		mScale.setOnClickListener(this);
 		mLaserSet = (CheckBox)findViewById(R.id.cb_laser_set);
+		mLaserSet.setOnClickListener(this);
 		mLasetPower = (CheckBox)findViewById(R.id.cb_laser_power);
+		mLasetPower.setOnClickListener(this);
 		mMoveDetect = (CheckBox)findViewById(R.id.cb_move_detect);
+		mMoveDetect.setOnClickListener(this);
 		cbShutter = (CheckBox)findViewById(R.id.cb_shutter);
-		cbGain = (CheckBox)findViewById(R.id.cb_gain);
 		cbShutter.setOnClickListener(this);
+		cbGain = (CheckBox)findViewById(R.id.cb_gain);
 		cbGain.setOnClickListener(this);
 		spShutter = (Spinner)findViewById(R.id.spinner_shutter);
 		shutterArray = getResources().getStringArray(R.array.shutter_arry);
 		shutterAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,shutterArray);
-		shutterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); 
+		shutterAdapter.setDropDownViewResource(R.layout.spinner_item); 
 		spShutter.setAdapter(shutterAdapter);  
 		//进止程序启动时spinner调用OnItemSelectedListener
 		//spShutter.setSelection(0, true);
@@ -142,46 +126,21 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 	        @Override  
 	        public void onItemSelected(AdapterView<?> arg0, View arg1,  
 	                  int arg2, long arg3) {  
-	        	System.out.println("spShutterFirstSelectFlag:"+spShutterFirstSelectFlag);
-	        	if(!spShutterFirstSelectFlag){
-	        		spShutterFirstSelectFlag = true;
-	        		return;
-	        	}
+//	        	System.out.println("spShutterFirstSelectFlag:"+spShutterFirstSelectFlag);
+//	        	if(!spShutterFirstSelectFlag){
+//	        		spShutterFirstSelectFlag = true;
+//	        		return;
+//	        	}
 	        	System.out.println("OnItemSelectedListener"+"你选择了："+ shutterArray[(int)arg2]);
 //	            Toast.makeText(getApplicationContext(),   
 //	                    "你选择了："+ shutterArray[(int)arg2], 1).show();  
-	            setMisc(1 << 1, 1 ,(int)arg2,0,0);
-	            //arg0.setVisibility(View.VISIBLE);  
-	        }  
-	        @Override  
-	        public void onNothingSelected(AdapterView<?> arg0) { 
-	          	
-	        }             
-	    });  
-		
-		spGain = (Spinner)findViewById(R.id.spinner_gain);
-		gainArray = new String[32];
-		for(int i=0 ; i <= 31 ;i++){
-			gainArray[i] = String.valueOf(i+5);
-		}
-		gainAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,gainArray);
-		gainAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); 
-		spGain.setAdapter(gainAdapter);  
-		//进止程序启动时spinner调用OnItemSelectedListener
-		//spGain.setSelection(0, true);
-		spGain.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){  
-	        @Override  
-	        public void onItemSelected(AdapterView<?> arg0, View arg1,  
-	                  int arg2, long arg3) {  
-	        	System.out.println("spGainFirstSelectFlag:"+spGainFirstSelectFlag);
-	        	if(!spGainFirstSelectFlag){
-	        		spGainFirstSelectFlag = true;
-	        		return;
+	        	switch((int)arg2){
+	        	case 0:;break;
+	        	case 1:setMisc(1 << 1, 1 ,1,0,0);break;
+	        	case 2:setMisc(1 << 1, 1 ,3,0,0);break;
+	        	case 3:setMisc(1 << 1, 1 ,5,0,0);break;
+	        	case 4:setMisc(1 << 1, 1 ,7,0,0);break;
 	        	}
-	        	System.out.println("OnItemSelectedListener"+"你选择了："+ gainArray[(int)arg2]);
-//	            Toast.makeText(getApplicationContext(),   
-//	                    "你选择了："+ gainArray[(int)arg2], 1).show();  
-	            setMisc(1 << 8, 0 , 0 , 1 , Integer.valueOf(gainArray[(int)arg2]));
 	            //arg0.setVisibility(View.VISIBLE);  
 	        }  
 	        @Override  
@@ -189,151 +148,59 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 	          	
 	        }             
 	    });  
-		
-		//CheckBox:��ɫ�ڰ��ֶ��Զ��л�
-		mAutoChange.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				if(mAutoChange.isChecked()){
-					//--------�ֶ���ɫ�ڰ��л�--------
-//					autoChange = true;
-					//��ɫ�ڰ����ñ��δѡȡ�����ɰ��£���ɫ�ڰ���������
-					mColorChange.setChecked(false);
-					mColorChange.setEnabled(false);
-					mLayoutChangeColor.setVisibility(View.INVISIBLE);
-//					myHandler.sendEmptyMessage(AutoChangeSetChecked);
-					setAutoColorChangeMode();
-				}else{
-					//--------�Զ���ɫ�ڰ��л�--------
-					//ɫ�����ÿ��԰���
-					mColorChange.setEnabled(true);
-					mLayoutChangeColor.setVisibility(View.VISIBLE);
-//					myHandler.sendEmptyMessage(AutoChangeSetUnChecked);
-					setManualColorChangeMode();
-				}
-			}
-		});
-		//CheckBox:��ɫ�ڰ���ɫ�л�
-		mColorChange.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				if(mColorChange.isChecked()){
-					//--------��ɫģʽ--------
-					setColorMode();
-				}else{
-					//--------�ڰ�ģʽ--------
-					setBlackMode();
-				}
-			}
-		});
-		
-		mLaserSet.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				if(mLaserSet.isChecked()){
-					//--------���⼤�⿪��--------	
-					//���⹦�ʰ�ť��ɿɰ��£��ߵ͹���������ʾ
-					mLasetPower.setEnabled(true);
-					mLayoutChangePower.setVisibility(View.VISIBLE);
-//						myHandler.sendEmptyMessage(LaserSetChecked);
-					setLaserIrradiateOn();
-						
-					//���ó��ֶ����ںڰ�ģʽ
-					mAutoChange.setChecked(false);
-					mColorChange.setChecked(false);
-					setBlackMode();
-//					mTVHighPower.setTextColor(getResources().getColor(R.color.red));
-//					mTVLowPower.setTextColor(getResources().getColor(R.color.white));
-				}else{
-					//--------���⼤��ر�--------
-//					laseroff = true;
-					mLasetPower.setChecked(false);
-					mLasetPower.setEnabled(false);
-					mLayoutChangePower.setVisibility(View.INVISIBLE);
-//						myHandler.sendEmptyMessage(LaserSetUnChecked);
-					setLaserIrradiateOff();
-//						laseroff = false;
-//						mTVHighPower.setTextColor(color.darker_gray);
-//						mTVLowPower.setTextColor(color.darker_gray);
-				}
-			}
-		});
-		
-		mLasetPower.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				if(mLasetPower.isChecked()){
-					//--------�߹���-----------
-					setHighPower();
-				}else{
-					//--------�͹���-----------
-					setLowPower();
-				}
-			}
-		});
-//			}
-//		});
-		//¼���Ȳ�ʵ��
-//		mRecord.setEnabled(false);
-		
-		//CheckBox:�ƶ���⿪��
-		mMoveDetect.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				if(mMoveDetect.isChecked()){
-					//--------�ƶ���⿪��--------
-					//startVMD();
-					VMDThread thread = new VMDThread(true);
-					thread.start();
-				}else{
-					//--------�ƶ����ر�--------
-					//stopVMD();
-					VMDThread thread = new VMDThread(false);
-					thread.start();
-				}
-			}
-		});
-		
-		mScale = (CheckBox)findViewById(R.id.cb_scale);
-		mScale.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				ViewGroup.LayoutParams lp = (ViewGroup.LayoutParams) mGlView.getLayoutParams();
-				if(mScale.isChecked()){
-					lp.height = PhoneConfig.getPhoneHeight(HWCameraActivity.this) * 2;
-				    lp.width = PhoneConfig.getPhoneWidth(HWCameraActivity.this) * 2;
-				}else{
-					lp.height = PhoneConfig.getPhoneHeight(HWCameraActivity.this);
-				    lp.width = PhoneConfig.getPhoneWidth(HWCameraActivity.this);
-				}
-				 mGlView.setLayoutParams(lp);
-			}
-		});
 		
 		sp = new SoundPool(1,AudioManager.STREAM_MUSIC, 0);  
 		soundId = sp.load(this, R.raw.alarm, 1);
 		System.out.println("soundId:"+soundId);
-        try{
-	        audioInit();
-	        display(0);
-        }catch (Exception e) {
-			// TODO: handle exception
-        	MessageUtiles.postNewUIDialog(getContext(), getContext().getString(R.string.link_error), getContext().getString(R.string.ok), 1);
-		}
-        settings();
+		
+		audioInit();
+		new AsyncTask<Void, Integer, Void>(){
+			int ret;
+			@Override
+			protected Void doInBackground(Void... arg0) {
+				// TODO Auto-generated method stub
+				
+		        ret = display(0);
+				return null;
+			}
+			@SuppressLint("NewApi")
+			protected void onPostExecute(Void result) {
+				if(ret >= 0){
+					//OK
+					new AsyncTask<Void, Integer, Void>(){
 
+						@Override
+						protected Void doInBackground(Void... arg0) {
+							// TODO Auto-generated method stub
+							getSettings();
+							return null;
+						}
+						
+						protected void onPostExecute(Void result) {
+							setCameraCheckBoxValue();
+						};
+						
+					}.execute();
+		        	
+				}else{
+					if(!isDestroyed()){
+						Dialog alertDialog = new AlertDialog.Builder(HWCameraActivity.this).   
+		        	            setTitle("登录失败").   
+		        	            setMessage("登录失败，请重新登录").   
+		        	            setIcon(R.drawable.expander_ic_minimized).   
+		        	            setPositiveButton("确定", new DialogInterface.OnClickListener() {   
+		        	                @Override   
+		        	                public void onClick(DialogInterface dialog, int which) {   
+		        	                    // TODO Auto-generated method stub  
+		        	                	finish();
+		        	                }   
+		        	            }).   
+		        	    create();   
+		        		alertDialog.show();  
+					}
+				}
+			};
+		}.execute();
     }
     
     private int getYear(String phoneTime){
@@ -355,101 +222,131 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
     	return Integer.valueOf(phoneTime.substring(12, 14));
     }
     
-    private int setTimeRet,BWModeRet,firstColorRet,laserRet,VMDRet;
-    private void settings(){
-		//��ȡ�ڰ�ģʽ��ʼ״̬
-		BWModeRet = setBlackWhiteMode();
-		if(BWModeRet == 0){
-		    //�ֶ��ڰ�ģʽ
-		    mAutoChange.setChecked(false);
-		    System.out.println("�ֶ�ģʽ");
-		    //��ȡ�ڰײ�ɫ��ʼ״̬
-			firstColorRet = setFirstColorMode();
-			System.out.println("��ɫ�ڰ�"+firstColorRet);
-			if(firstColorRet == 0){
-			    //��ɫ
-			    mColorChange.setChecked(true);
-			    System.out.println("��ɫ");
-			}else if(firstColorRet == 1){
-			    //�ڰ�
-			    mColorChange.setChecked(false);
-			    System.out.println("�ڰ�");
-			}
-		}else if(BWModeRet == 1){
-		    //�Զ��ڰ�ģʽ
-		    mAutoChange.setChecked(true);
-		    mColorChange.setEnabled(false);
-		    mLayoutChangeColor.setVisibility(View.INVISIBLE);
-		    System.out.println("�Զ�ģʽ");
-		}
-		//��ȡ���⼤��ģʽ��ʼ״̬
-		laserRet = setLaserIrradiateMode();
-		if(laserRet == 1){
-		    //�͹���
-		    mLaserSet.setChecked(true);
-		    mLasetPower.setChecked(false);
-		    		
-		    mLasetPower.setEnabled(true);
-			mLayoutChangePower.setVisibility(View.VISIBLE);
-		    System.out.println("�͹���");
-		}else if(laserRet == 2){
-		    //�߹���
-		    mLaserSet.setChecked(true);
-		    mLasetPower.setChecked(true);
-		    System.out.println("11111111");
-		    mLasetPower.setEnabled(true);
-			mLayoutChangePower.setVisibility(View.VISIBLE);
-			System.out.println("222222222");
-		    System.out.println("�߹���");
-		}else if(laserRet == 3){
-		    //�ر�
-		    mLaserSet.setChecked(false);
-		    mLasetPower.setEnabled(false);
-			mLayoutChangePower.setVisibility(View.INVISIBLE);
-			System.out.println("����ر�");
-		}
-		//��ȡ�ƶ�����ʼ״̬
-		VMDRet = setVMDMode();
-		if(VMDRet == 1){
-		    //�ƶ���⿪��
-		    mMoveDetect.setChecked(true);
-		    System.out.println("�ƶ���⿪��");
-		}else if(VMDRet == 0){
-		    //�ƶ����ر�
-		    mMoveDetect.setChecked(false);
-		    System.out.println("�ƶ����ر�");
-		}
-		misc = new NetIpcamMisc();
-		getMisc(misc);
-		System.out.println(misc.toString());
-		if(misc.enable_lowest_shutter == 0){
-			spShutter.setEnabled(false);
-			cbShutter.setChecked(false);
-		}else{
-			spShutter.setEnabled(true);
-			if(misc.shutter >= 0 && misc.shutter <= 19){
-				spShutter.setSelection(misc.shutter, true);
-			}
-			cbShutter.setChecked(true);
-		}
-		if(misc.enable_uppest_agc == 0){
-			spGain.setEnabled(false);
-			cbGain.setChecked(false);
-		}else{
-			spGain.setEnabled(true);
-			for(int i = 0 ; i < gainArray.length ; i++){
-				if(gainArray[i].equals(String.valueOf(misc.agc_upper_limit))){
-					spGain.setSelection(i, true);
-					break;
-				}
-			}
-			cbGain.setChecked(true);
-		}
-//		isSetting =false;
+    private int BWModeRet,firstColorRet,laserRet,VMDRet;
+    //获取摄像机各属性值
+    private void getSettings(){
+    	BWModeRet = getBlackWhiteMode();
+    	firstColorRet = getFirstColorMode();
+    	laserRet = getLaserIrradiateMode();
+    	VMDRet = getVMDMode();
+    	misc = new NetIpcamMisc();
+    	getMisc(misc);
     }
     
-    public static Context getContext() {
-        return mPlayer;
+    private void setCameraCheckBoxValue(){
+    	//---------设置黑白模式设置-------------
+    	if(BWModeRet == 0){					//手动调节
+    		Log.i("set", "手动调节黑白模式");
+    		if(firstColorRet == 0){			//彩色
+    			Log.i("set", "彩色模式");
+    			mColorChange.setChecked(true);
+    		}else if(firstColorRet == 1){	//黑白
+    			Log.i("set", "黑白模式");
+    			mColorChange.setChecked(false);
+    		}
+    	}else if(BWModeRet == 1){			//自动调节
+    		Log.i("set", "自动调节黑白模式");
+    		mColorChange.setChecked(true);	//彩色
+    	}
+    	//---------获取gpio状态 设置红外激光状态-------------
+    	if(laserRet == 1){
+    		Log.i("set", "红外激光打开 低功率");
+    		mLaserSet.setChecked(true);		//红外激光打开
+    		mLasetPower.setChecked(false);	//红外激光低功率
+    		mLasetPower.setEnabled(true);
+    		mLayoutChangePower.setVisibility(View.VISIBLE);
+    	}else if(laserRet == 2){
+    		Log.i("set", "红外激光打开 高功率");
+    		mLaserSet.setChecked(true);		//红外激光打开
+    		mLasetPower.setChecked(true);	//红外激光高功率
+    		mLasetPower.setEnabled(true);
+    		mLayoutChangePower.setVisibility(View.VISIBLE);
+    	}else if(laserRet == 3){			
+    		Log.i("set", "红外激光关闭");
+    		mLaserSet.setChecked(false);	//红外激光关闭
+    		mLasetPower.setEnabled(false);
+    		mLayoutChangePower.setVisibility(View.INVISIBLE);
+    	}
+    	//---------设置移动侦测状态-------------
+    	if(VMDRet == 1){
+    		Log.i("set", "移动侦测打开");
+    		mMoveDetect.setChecked(true);	//移动侦测打开
+    	}else if(VMDRet == 0){
+    		Log.i("set", "移动侦测关闭");
+    		mMoveDetect.setChecked(false);	//移动侦测关闭
+    	}
+    	//---------设置最低增益 慢速快门状态-------------
+    	if(misc.enable_lowest_shutter == 0){//慢速快门为自动状态
+    		Log.i("set", "慢速快门自动状态");
+    		spShutter.setVisibility(View.INVISIBLE);
+    		cbShutter.setChecked(false);
+    	}else{								//慢速快门为手动状态
+    		Log.i("set", "慢速快门自动状态");
+    		spShutter.setVisibility(View.VISIBLE);
+    		Log.i("set", "慢速快门shutter："+misc.shutter);
+    		switch (misc.shutter) {
+			case 1:	//1/2 sec
+				spShutter.setSelection(1, true);
+				break;
+			case 3:	//1/4 sec
+				spShutter.setSelection(2, true);
+				break;
+			case 5:	//1/7 sec
+				spShutter.setSelection(3, true);
+				break;
+			case 7:	//1/12.5 sec
+				spShutter.setSelection(4, true);
+				break;
+			default:
+				spShutter.setVisibility(View.INVISIBLE);
+	    		cbShutter.setChecked(false);
+				break;
+			}
+	    	cbShutter.setChecked(true);
+	    }
+    	if(misc.enable_uppest_agc == 0){	//增益调节为自动状态
+    		Log.i("set", "增益调节自动状态");
+    		cbGain.setChecked(false);
+    	}else{								//增益调节为手动状态
+    		Log.i("set", "增益调节手动状态");
+    		Log.i("set", "慢速快门agc_upper_limit："+misc.agc_upper_limit);
+    		if(misc.agc_upper_limit <= 20 && misc.agc_upper_limit >= 5){
+    			Log.i("set", "慢速快门-低");
+    			cbGain.setChecked(false);
+    		}else if(misc.agc_upper_limit > 20 && misc.agc_upper_limit <= 36){
+    			Log.i("set", "慢速快门-高");
+    			cbGain.setChecked(true);
+    		}
+    	}
+    }
+    
+    //设置默认属性值
+    private void setCheckBoxValue(){
+    	//开机默认彩色
+    	mColorChange.setChecked(true);
+    	//开机默认辅助调焦正常
+    	mScale.setChecked(false);
+    	//红外极光关闭
+    	mLaserSet.setChecked(false);
+    	//入侵警报关闭
+    	mMoveDetect.setChecked(false);
+    	//增益调节设低
+    	cbGain.setChecked(false);
+    	cbShutter.setChecked(false);
+    	spShutter.setVisibility(View.INVISIBLE);
+    }
+    
+    private void settings(){
+		//开机默认彩色
+    	setColorMode();
+    	//红外极光关闭
+    	setLaserIrradiateOff();
+    	//获取报警边界row,col
+    	getVMDMode();
+    	//入侵警报关闭
+    	stopVMD();
+    	//增益调节设低
+    	setMisc(1 << 8, 0 , 0 , 1 , 20);
     }
     
     /**
@@ -469,7 +366,7 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 				1);// 回放速度，该值在0.5-2.0之间 1为正常速度
 	}
     
-    private native void display(int isPlayBack);
+    private native int display(int isPlayBack);
     public static native void quit();
 	public native void nativeAudioInit();
 	private native int setTime(int year,int month,int day,int hour,int minute,int second);
@@ -485,13 +382,13 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 	private native void setLowPower();
 	private native void setLaserIrradiateOn();
 	private native void setLaserIrradiateOff();
-	private native int setBlackWhiteMode();
-	private native int setFirstColorMode();
-	private native int setLaserIrradiateMode();
-	private native int setVMDMode();
+	private native int getBlackWhiteMode();
+	private native int getFirstColorMode();
+	private native int getLaserIrradiateMode();	//获取红外极光照明开关状态
+	private native int getVMDMode();			//获取移动侦测报警边界值和开关状态
 	private native int setMisc(int flag,int enable_lowest_shutter ,int shutter ,int enable_uppest_agc ,int agc_upper_limit);
 	private native int getMisc(NetIpcamMisc misc);
-	
+	private native void setIP(String ip);
 	private void makeAlarmSound(){
 		System.out.println("AlarmNum = "+alarmManager.getAlarmNum());
 		if(alarmManager.getAlarmNum() == 0){
@@ -607,20 +504,6 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 		mAudioTrack.write(mAudioData,0,mAudioDataLength);
 	}
     
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		super.onKeyDown(keyCode, event);
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			Log.e("backCount", "backCount:"+backCount);
-			if (backCount == 0) {
-				MyTask mTask = new MyTask();
-				mTask.execute();
-			}
-			System.out.println(backCount);
-			backCount++;
-		}
-		return false;
-	}
 
 	@Override
 	protected void onPause() {
@@ -628,13 +511,24 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 		mPausing = true;
 		this.mGlView.onPause();
 		super.onPause();
-//		if (backCount == 0) {
-//			MyTask mTask = new MyTask();
-//			mTask.execute();
-//		}
-//		System.out.println(backCount);
-//		backCount++;
-		//finish();
+	}
+	
+	public class MyTask extends AsyncTask<Void, Integer, Void> {
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			System.out.println("call doInBackground");
+	        try{
+		        quit();
+		        audioStop();
+		        YV12Renderer.nativeDeinit();
+		        finish();
+	        }catch (Exception e) {
+					// TODO: handle exception
+			}
+	        return null;
+		}
 	}
 
 	@Override
@@ -643,6 +537,8 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 		super.onDestroy();
 		System.runFinalization();
 		sp.release();
+		MyTask mTask = new MyTask();
+		mTask.execute();
 	}
 
 	@Override
@@ -676,22 +572,94 @@ public class HWCameraActivity extends Activity implements Callback,OnClickListen
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
-		case R.id.cb_shutter:
-			if(cbShutter.isChecked()){
-				spShutter.setEnabled(true);
+		//彩色黑白切换
+		case R.id.cb_color_change :
+			if(mColorChange.isChecked()){
+				setColorMode();
 			}else{
-				spShutter.setEnabled(false);
-				setMisc(1 << 1, 0 , 0 , 0 , 0);
+				setBlackMode();
 			}
 			break;
+		//辅助调焦
+		case R.id.cb_scale:
+			ViewGroup.LayoutParams lp = (ViewGroup.LayoutParams) mGlView.getLayoutParams();
+			if(mScale.isChecked()){
+				lp.height = PhoneConfig.getPhoneHeight(HWCameraActivity.this) * 2;
+			    lp.width = PhoneConfig.getPhoneWidth(HWCameraActivity.this) * 2;
+			}else{
+				lp.height = PhoneConfig.getPhoneHeight(HWCameraActivity.this);
+			    lp.width = PhoneConfig.getPhoneWidth(HWCameraActivity.this);
+			}
+			 mGlView.setLayoutParams(lp);
+			break;
+		//红外激光开关
+		case R.id.cb_laser_set:
+			if(mLaserSet.isChecked()){
+				mLasetPower.setEnabled(true);
+				mLayoutChangePower.setVisibility(View.VISIBLE);
+				setLaserIrradiateOn();
+				setLowPower();
+				mColorChange.setChecked(false);
+				setBlackMode();
+			}else{
+				mLasetPower.setChecked(false);
+				mLasetPower.setEnabled(false);
+				mLayoutChangePower.setVisibility(View.INVISIBLE);
+				setLaserIrradiateOff();
+				
+				mColorChange.setChecked(true);
+				setColorMode();
+			}
+			break;
+		//红外极光强度
+		case R.id.cb_laser_power:
+			if(mLasetPower.isChecked()){
+				setHighPower();
+			}else{
+				setLowPower();
+			}
+			break;
+		//入侵报警开关
+		case R.id.cb_move_detect:
+			if(mMoveDetect.isChecked()){
+				VMDThread thread = new VMDThread(true);
+				thread.start();
+			}else{
+				VMDThread thread = new VMDThread(false);
+				thread.start();
+			}
+			break;
+		//增益调节
 		case R.id.cb_gain:
 			if(cbGain.isChecked()){
-				spGain.setEnabled(true);
+				setMisc(1 << 8, 0 , 0 , 1 , 36);
 			}else{
-				spGain.setEnabled(false);
-				setMisc(1 << 8, 0 , 0 , 0 , 0);
+				setMisc(1 << 8, 0 , 0 , 1 , 20);
+				//setMisc(1 << 8, 0 , 0 , 0 , 0);
 			}
 			break;
+		case R.id.cb_shutter:
+			if(cbShutter.isChecked()){
+				spShutter.setVisibility(View.VISIBLE);
+				spShutter.performClick();
+				spShutter.setSelection(0,true);
+				cbGain.setChecked(true);
+				setMisc(1 << 8, 0 , 0 , 1 , 36);
+			}else{
+				spShutter.setVisibility(View.INVISIBLE);
+				setMisc(1 << 1, 0 , 0 , 0 , 0);
+				cbGain.setChecked(false);
+				setMisc(1 << 8, 0 , 0 , 1 , 20);
+			}
+			break;
+//		case R.id.cb_gain:
+//			if(cbGain.isChecked()){
+//				spGain.setEnabled(true);
+//			}else{
+//				spGain.setEnabled(false);
+//				setMisc(1 << 8, 0 , 0 , 0 , 0);
+//			}
+//			break;
 		default:
 			break;
 		}
