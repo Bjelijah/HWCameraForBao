@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+	<android.opengl.GLSurfaceView
+        android:id="@+id/glsurface_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+<ScrollView
+    android:id="@+id/scrollView"
+    android:layout_width="211dp"
+    android:layout_height="match_parent"
+    android:background="@drawable/surface_icon_bk"
+    android:scrollbars="none"
+    android:visibility="gone"
+     >
+<LinearLayout
+    android:id="@+id/surface_set"
+    android:layout_width="211dp"
+    android:layout_height="wrap_content"
+    
+    android:gravity="center|top"
+    android:orientation="vertical" 
+    >
+
+    <!--  -->
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        android:layout_marginTop="5dip"
+        >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" >
+
+            <TextView
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:textSize="15sp"
+		        android:text="@string/color_change" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" 
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginRight="15dip"
+                android:text="@string/surface_scale" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" 
+                android:layout_weight="1">
+
+                <CheckBox
+                    android:id="@+id/cb_color_change"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/MyCheckBox" />
+
+                <LinearLayout
+                    android:id="@+id/ll_color_change"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" 
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_color"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/color" 
+                        android:textColor="@color/red"/>
+
+                    <TextView
+                        android:id="@+id/tv_white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/white" 
+                        android:textColor="@color/white"/>
+                </LinearLayout>
+            </LinearLayout>
+            
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" 
+                android:layout_weight="1">
+
+	            <CheckBox
+		            android:id="@+id/cb_scale"
+		            style="@style/MyCheckBox"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content" />
+	
+		        <LinearLayout
+		            android:layout_width="match_parent"
+		            android:layout_height="match_parent"
+		            android:gravity="center"
+		            android:orientation="vertical" >
+					
+		            <TextView
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:text="@string/scale_large"
+		                android:textColor="@color/red" />
+		            
+		            <TextView
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:text="@string/scale_normal"
+		                android:textColor="@color/white" />
+		            
+		
+		        </LinearLayout>
+	        </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:text="@string/laser"
+        android:layout_gravity="left" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <CheckBox
+            android:id="@+id/cb_laser_set"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/MyCheckBox"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingLeft="13dip" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/switch_on"
+                android:textColor="@color/red" />
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/switch_off"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/cb_laser_power"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="28dip"
+            android:layout_weight="1"
+            style="@style/MyCheckBox"
+            android:paddingRight="10dip"
+            android:enabled="false" />
+
+        <LinearLayout
+            android:id="@+id/ll_change_power"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="invisible"   >
+
+
+            <TextView
+                android:id="@+id/tv_low_power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/high_power"
+                android:textColor="@color/red" />
+            
+            <TextView
+                android:id="@+id/tv_high_power"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/low_power"
+                android:textColor="@color/white" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:text="@string/move_detect" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" 
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginRight="15dip"
+                android:text="@string/max_gain" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+        
+        <CheckBox
+            android:id="@+id/cb_move_detect"
+            style="@style/MyCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center|left"
+            android:layout_marginLeft="25dip"
+            android:orientation="vertical" >
+
+            
+		
+			<TextView
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/switch_on"
+		        android:textColor="@color/red" />
+			
+			<TextView
+		       	android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+		      	android:text="@string/switch_off"
+		   		android:textColor="@color/white" />
+
+        </LinearLayout>
+        
+        <CheckBox
+            android:id="@+id/cb_gain"
+            style="@style/MyCheckBox"
+            android:layout_marginLeft="28dip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center|left"
+            android:layout_marginLeft="25dip"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/tv_gain_low"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="高"
+                android:textColor="@color/red" />
+
+            <TextView
+                android:id="@+id/tv_gain_high"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="低"
+                android:textColor="@color/white" />
+
+		</LinearLayout>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        >
+
+        <LinearLayout
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:text="@string/lowest_shutter" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dip"
+        android:gravity="center_vertical" >
+       <CheckBox
+            android:id="@+id/cb_shutter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/MyCheckBox"
+            />
+
+		<Spinner
+		    android:id="@+id/spinner_shutter"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content" />
+            
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        android:layout_marginTop="5dip"
+        android:layout_marginBottom="5dip"
+        >
+
+        <LinearLayout
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1" 
+            android:gravity="center">
+
+            
+
+        </LinearLayout>
+        <!--  <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1" 
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18dip"
+                android:text="@string/max_gain" />
+
+        </LinearLayout>-->
+    </LinearLayout>
+
+
+</LinearLayout>
+</ScrollView>
+<!-- <TextView
+    android:id="@+id/sd_space"
+    android:layout_gravity="right"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginRight="10dip"
+    android:textStyle="bold"
+    android:textColor="@color/white"
+    android:visibility="gone" />
+
+ <ProgressBar
+    android:id="@+id/progressBar"
+    style="?android:attr/progressBarStyleLarge"
+    android:layout_gravity="center"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />-->
+
+</FrameLayout>

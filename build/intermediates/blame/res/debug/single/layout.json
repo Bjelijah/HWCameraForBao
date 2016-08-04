@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\layout\\choice_layout.xml",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\layout\\choice_layout.xml"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\layout\\dialog_view.xml",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\layout\\dialog_view.xml"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\layout\\spinner_item.xml",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\layout\\spinner_item.xml"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\layout\\main.xml",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\layout\\main.xml"
+    }
+]

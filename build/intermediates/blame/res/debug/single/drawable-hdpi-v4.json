@@ -1,0 +1,38 @@
+[
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\background.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\background.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\expander_ic_minimized.9.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\expander_ic_minimized.9.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\ic_launcher.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\dialog_background.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\dialog_background.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\nofocus.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\nofocus.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\check_true.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\check_true.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\focus.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\focus.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\check_false.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\check_false.png"
+    },
+    {
+        "merged": "E:\\eclipse\\workspace\\HWCamera\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\surface_icon_bk.png",
+        "source": "E:\\eclipse\\workspace\\HWCamera\\res\\drawable-hdpi\\surface_icon_bk.png"
+    }
+]

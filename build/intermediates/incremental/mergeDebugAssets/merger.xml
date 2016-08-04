@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="E:\eclipse\workspace\HWCamera\assets"/><source path="E:\eclipse\workspace\HWCamera\build\generated\assets\shaders\debug"/></dataSet><dataSet config="debug"><source path="E:\eclipse\workspace\HWCamera\build-types\debug\assets"/></dataSet></merger>
