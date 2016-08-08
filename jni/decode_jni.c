@@ -184,7 +184,7 @@ PLAY_HANDLE init_play_handle(int is_playback){
 	int ret2 = hwnet_get_live_stream_head(res->live_stream_handle,(char*)&media_head,1024,&res->media_head_len);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "ret2 :%d",ret2);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "is_playback :%d",is_playback);
-
+	LOGE("0x%x",media_head.vdec_code);
 	res->alarm_stream_handle = hwnet_get_alarm_stream(res->user_handle,on_alarm_stream_fun,0);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "alarm_stream_handle :%d",res->alarm_stream_handle);
 
@@ -210,7 +210,7 @@ int create_resource(int is_playback,JNIEnv *env, jobject obj)
 	/* make sure init once */
 	__android_log_print(ANDROID_LOG_INFO, "!!!", "create_resource %d",is_playback);
 	res = (struct StreamResource *)calloc(1,sizeof(*res));
-	if (res == NULL) return;
+	if (res == NULL) return 0;
 	res->is_playback = is_playback;
 	res->play_handle = init_play_handle(is_playback);
 	(*env)->GetJavaVM(env,&res->jvm);

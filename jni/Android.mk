@@ -14,7 +14,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := player_jni
 # Add your application source files here...
-LOCAL_SRC_FILES := yv12gl_jni.c decode_jni.c audio_jni.c
+LOCAL_SRC_FILES := HWCamera.cpp
 LOCAL_SHARED_LIBRARIES := hwplay hwnet
 LOCAL_LDFLAGS := -LE:/Android/android-ndk-r10e/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a
 LOCAL_LDLIBS := -llog -lgnustl_static -lGLESv2 -lz -ldl -lgcc

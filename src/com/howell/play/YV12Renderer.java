@@ -13,6 +13,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import com.howell.camera.HWCameraActivity;
 import com.howell.camera.PhoneConfig;
+import com.howell.jni.JniUtil;
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -87,12 +88,24 @@ public class YV12Renderer
 	private GLSurfaceView gl_surface_view_;
 	
 
-	private native void nativeInit();
-	public static native void nativeDeinit();
-	private native void nativeRenderY();
-	private native void nativeRenderU();
-	private native void nativeRenderV();
-	private native void nativeOnSurfaceCreated();
+	private void nativeInit(){
+		JniUtil.nativeInit(this);
+	}
+	public static void nativeDeinit(){
+		JniUtil.nativeDeinit();
+	}
+	private void nativeRenderY(){
+		JniUtil.nativeRenderY();
+	}
+	private void nativeRenderU(){
+		JniUtil.nativeRenderU();
+	}
+	private void nativeRenderV(){
+		JniUtil.nativeRenderV();
+	}
+	private void nativeOnSurfaceCreated(){
+		JniUtil.nativeOnSurfaceCreated();
+	}
 	  
 	public YV12Renderer(Context context, GLSurfaceView view) {
 		context_ = context;
