@@ -227,6 +227,44 @@ void audio_play(const char* buf,int len,int au_sample,int au_channel,int au_bits
 	}
 }
 
+JNIEXPORT void JNICALL Java_com_howell_jni_JniUtil_nativeAudioInit
+  (JNIEnv *env, jclass, jobject obj){
+	  env->GetJavaVM(&audioSelf.jvm);
+
+	  //����ֱ�Ӹ�ֵ(g_obj = obj)
+	  audioSelf.obj = env->NewGlobalRef(obj);
+
+	  jclass clz = env->GetObjectClass( obj);
+	  audioSelf.data_length_id = env->GetFieldID(clz, "mAudioDataLength", "I");
+
+	  jfieldID id = env->GetFieldID(clz,"mAudioData","[B");
+
+	  jbyteArray data_array_local_ref = (jbyteArray)env->GetObjectField(obj,id);
+	  int data_array_len_local_ref = env->GetArrayLength(data_array_local_ref);
+	  jbyteArray data_array_global_ref =(jbyteArray)env->NewGlobalRef(data_array_local_ref);
+
+	  audioSelf.data_array = data_array_global_ref;
+	  audioSelf.data_array_len = data_array_len_local_ref;
+	  //self.data_array = (*env)->GetObjectField(env,obj,id);
+	  //self.data_array_len =(*env)->GetArrayLength(env,self.data_array);
+
+	  sem_init(&audioSelf.over_audio_sem,0,0);
+	  sem_init(&audioSelf.over_audio_ret_sem,0,0);
+
+	  audioSelf.method_ready = 0;
+	  audioSelf.stop = 0;
+}
+
+JNIEXPORT void JNICALL Java_com_howell_jni_JniUtil_nativeAudioStop
+  (JNIEnv *, jclass){
+	  audio_stop();
+}
+
+JNIEXPORT void JNICALL Java_com_howell_jni_JniUtil_nativeAudioDeinit
+  (JNIEnv *, jclass){
+	//TODO
+}
+
 struct StreamResource
 {
 	JavaVM * jvm;
